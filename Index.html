@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensi Elite X - Ultimate Version</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap');
+
+        :root {
+            --red-neon: #ff0000;
+            --blue-neon: #00d9ff;
+            --bg-black: #000000;
+            --card-bg: rgba(10, 10, 10, 0.95);
+            --glow: 0 0 15px rgba(255, 0, 0, 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; }
+
+        body {
+            background-color: var(--bg-black);
+            color: #fff;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* FUNDO DINÂMICO */
+        #stars-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            background: radial-gradient(circle at center, #200000 0%, #000 100%);
+            pointer-events: none;
+        }
+
+        /* CONTAINER DE TELAS */
+        .app-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 95%;
+            max-width: 450px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 25px;
+            background: var(--card-bg);
+            border: 2px solid var(--red-neon);
+            border-radius: 40px;
+            box-shadow: var(--glow);
+            overflow-y: auto;
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        .screen.active { display: flex; }
+
+        /* HEADER */
+        .header-info { text-align: center; margin-bottom: 20px; }
+        #real-clock { font-family: 'Orbitron'; color: var(--blue-neon); font-size: 1.4rem; text-shadow: 0 0 10px var(--blue-neon); }
+        
+        /* BOTÕES ESTILIZADOS */
+        .btn-futuristic {
+            background: transparent;
+            border: 2px solid var(--red-neon);
+            color: #fff;
+            padding: 15px;
+            border-radius: 50px;
+            font-family: 'Orbitron';
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        .btn-futuristic:hover { background: var(--red-neon); box-shadow: 0 0 20px var(--red-neon); }
+
+        .btn-toggle {
+            flex: 1;
+            padding: 12px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.4s;
+            text-align: center;
+        }
+
+        .active-red { background: var(--red-neon) !important; box-shadow: 0 0 15px var(--red-neon); border-color: #fff; }
+        .active-blue { background: var(--blue-neon) !important; color: #000 !important; box-shadow: 0 0 15px var(--blue-neon); border-color: #fff; }
+
+        /* FORMULÁRIOS */
+        .input-box {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            padding: 14px 20px;
+            border-radius: 25px;
+            color: #fff;
+            margin-bottom: 15px;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        .input-box:focus { border-color: var(--blue-neon); }
+
+        /* MENSAGEM CARTA */
+        .letter {
+            background: #0a0a0a;
+            border-left: 5px solid var(--red-neon);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-style: italic;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* ENGRENAGEM */
+        .gear-btn {
+            position: absolute;
+            top: 15px; right: 25px;
+            font-size: 1.5rem;
+            color: #444;
+            cursor: pointer;
+            transition: 0.3s;
+            z-index: 100;
+        }
+        .gear-btn:hover { color: var(--blue-neon); transform: rotate(90deg); }
+
+        /* ANIMAÇÃO DE ARMAS */
+        #loading-overlay {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .weapon-cycle { font-size: 4rem; color: var(--red-neon); animation: pulse 0.5s infinite alternate; }
+
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.2); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* INFO DEVICES */
+        .device-card {
+            background: #111;
+            border: 1px solid var(--blue-neon);
+            padding: 15px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="stars-bg"></div>
+
+<div class="app-wrapper">
+    <div class="gear-btn" onclick="openAdmin()"><i class="fas fa-cog"></i></div>
+
+    <!-- TELA 1: CRIAR CONTA -->
+    <div id="scr-register" class="screen active">
+        <div class="header-info">
+            <div id="real-clock">00:00:00</div>
+            <h2 style="font-family:'Orbitron'; color:var(--red-neon)">NEXUS PROTOCOL</h2>
+        </div>
+        <div class="letter">Saudações, Guerreiro. Para acessar o gerador neural, você precisa registrar sua identidade no sistema. Insira os dados abaixo:</div>
+        <input type="text" id="reg-name" class="input-box" placeholder="Nome do Operador">
+        <input type="tel" id="reg-phone" class="input-box" placeholder="Número de Celular">
+        <input type="email" id="reg-email" class="input-box" placeholder="Gmail Oficial">
+        <input type="password" id="reg-pass" class="input-box" placeholder="Senha (deus)">
+        <button class="btn-futuristic" onclick="registerAccount()">CRIAR IDENTIDADE</button>
+    </div>
+
+    <!-- TELA 2: LOGIN -->
+    <div id="scr-login" class="screen">
+        <h2 style="text-align:center; color:var(--blue-neon); font-family:'Orbitron'">LOGIN</h2>
+        <br>
+        <input type="email" id="log-email" class="input-box" placeholder="Gmail">
+        <input type="password" id="log-pass" class="input-box" placeholder="Senha">
+        <button class="btn-futuristic" onclick="login()">ENTRAR</button>
+    </div>
+
+    <!-- TELA 3: GERADOR -->
+    <div id="scr-main" class="screen">
+        <h2 id="welcome-txt" style="font-size:1.1rem; color:var(--red-neon)">Bem-vindo ao melhor gerador de sensi 🔥</h2>
+        
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <div id="btn-android" class="btn-toggle" onclick="setOS('Android')">ANDROID</div>
+            <div id="btn-ios" class="btn-toggle" onclick="setOS('iOS')">iOS (iPhone)</div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <input type="text" id="dev-model" class="input-box" placeholder="Modelo do Celular" style="margin:0; flex:2" onkeyup="checkDevice()">
+            <input type="number" id="dev-ram" class="input-box" placeholder="RAM" style="margin:0; flex:1">
+        </div>
+
+        <div id="device-tips" class="device-card" style="display:none">
+            <b style="color:var(--blue-neon)">DICA PRO:</b> <span id="tip-content"></span>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <div id="btn-low" class="btn-toggle" onclick="setLevel('Baixa')">BAIXA</div>
+            <div id="btn-high" class="btn-toggle" onclick="setLevel('Alta')">ALTA</div>
+        </div>
+
+        <input type="number" id="target-dpi" class="input-box" placeholder="DPI/CICLO DESEJADO" style="margin-top:15px;">
+
+        <div id="loading-overlay">
+            <div class="weapon-cycle"><i class="fas fa-gun"></i></div>
+            <p style="font-family:'Orbitron'; font-size:0.7rem; color:var(--red-neon)">SINCRONIZANDO SENSORES...</p>
+        </div>
+
+        <button class="btn-futuristic" id="gen-btn" onclick="startGeneration()">GERAR SENSIBILIDADE</button>
+
+        <div id="results" style="display:none; margin-top:20px; border-top:1px solid #333; padding-top:15px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div class="device-card">GERAL: <b id="r-geral">100</b></div>
+                <div class="device-card">RED DOT: <b id="r-red">100</b></div>
+                <div class="device-card">MIRA 2X: <b id="r-2x">100</b></div>
+                <div class="device-card">MIRA 4X: <b id="r-4x">100</b></div>
+            </div>
+            <div class="device-card" style="text-align:center; border-color:var(--red-neon)">
+                <span id="label-final">DPI</span>: <b id="r-final">0</b>
+            </div>
+            <p style="font-size:0.7rem; margin-top:10px; color:var(--blue-neon)">Botão de Tiro: <span id="btn-val">30</span>%</p>
+            <input type="range" min="20" max="40" value="30" style="width:100%" oninput="updateRange(this.value)">
+        </div>
+
+        <textarea class="input-box" placeholder="Deixe seu comentário..." style="margin-top:15px; height:60px;"></textarea>
+        
+        <a href="https://instagram.com/cfss.matkus7" target="_blank" style="text-align:center; color:var(--red-neon); text-decoration:none; font-weight:bold;">@cfss.matkus7</a>
+    </div>
+</div>
+
+<!-- MODAL ADMIN -->
+<div id="admin-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:80%; background:#000; border:2px solid var(--blue-neon); z-index:1000; padding:20px; border-radius:20px;">
+    <h3 style="color:var(--blue-neon)">CAIXA DE ENTRADA</h3>
+    <div id="logs" style="font-family:monospace; font-size:0.8rem; margin:15px 0; color:#0f0;">Nenhum login registrado.</div>
+    <button class="btn-futuristic" onclick="openAdmin()" style="width:100%">FECHAR</button>
+</div>
+
+<script>
+    let db = { name: '', email: '', phone: '', pass: '' };
+    let selectedOS = '';
+    let selectedLevel = '';
+
+    setInterval(() => {
+        document.getElementById('real-clock').innerText = new Date().toLocaleTimeString();
+    }, 1000);
+
+    function registerAccount() {
+        const n = document.getElementById('reg-name').value;
+        const p = document.getElementById('reg-phone').value;
+        const e = document.getElementById('reg-email').value;
+        const s = document.getElementById('reg-pass').value;
+
+        if(!n || !p || !e || s !== 'deus') {
+            alert("Preencha tudo corretamente! Senha deve ser 'deus'");
+            return;
+        }
+
+        db = { name: n, phone: p, email: e, pass: s };
+        localStorage.setItem('user_nexus', JSON.stringify(db));
+        
+        document.getElementById('scr-register').classList.remove('active');
+        document.getElementById('scr-login').classList.add('active');
+    }
+
+    function login() {
+        const e = document.getElementById('log-email').value;
+        const s = document.getElementById('log-pass').value;
+        const saved = JSON.parse(localStorage.getItem('user_nexus'));
+
+        if(saved && e === saved.email && s === saved.pass) {
+            document.getElementById('scr-login').classList.remove('active');
+            document.getElementById('scr-main').classList.add('active');
+            document.getElementById('welcome-txt').innerText = `Bem-vindo, Operador ${saved.name} 🔥`;
+        } else {
+            alert("Acesso Negado!");
+        }
+    }
+
+    function setOS(os) {
+        selectedOS = os;
+        document.getElementById('btn-android').classList.remove('active-blue');
+        document.getElementById('btn-ios').classList.remove('active-blue');
+        document.getElementById('btn-' + os.toLowerCase()).classList.add('active-blue');
+    }
+
+    function setLevel(lv) {
+        selectedLevel = lv;
+        document.getElementById('btn-low').classList.remove('active-red');
+        document.getElementById('btn-high').classList.remove('active-red');
+        document.getElementById('btn-' + (lv === 'Baixa' ? 'low' : 'high')).classList.add('active-red');
+    }
+
+    function checkDevice() {
+        const model = document.getElementById('dev-model').value.toLowerCase();
+        const tipBox = document.getElementById('device-tips');
+        const tipText = document.getElementById('tip-content');
+
+        if(model.includes("s9")) {
+            tipBox.style.display = 'block';
+            tipText.innerText = "Galaxy S9 Plus detectado. Use a sensibilidade alta com DPI 580 para evitar o travamento da mira no peito.";
+        } else if(model.includes("iphone")) {
+            tipBox.style.display = 'block';
+            tipText.innerText = "iOS detectado. Ative o 'Controle Assistivo' e coloque Ciclos em 10 para melhor resposta.";
+        } else {
+            tipBox.style.display = 'none';
+        }
+    }
+
+    function updateRange(v) { document.getElementById('btn-val').innerText = v; }
+
+    function startGeneration() {
+        const dpi = document.getElementById('target-dpi').value;
+        if(!selectedOS || !selectedLevel || !dpi) {
+            alert("Complete todas as escolhas antes de gerar!");
+            return;
+        }
+
+        const btn = document.getElementById('gen-btn');
+        const load = document.getElementById('loading-overlay');
+        const res = document.getElementById('results');
+
+        btn.style.display = 'none';
+        load.style.display = 'block';
+        res.style.display = 'none';
+
+        const weapons = ['fa-gun', 'fa-crosshairs', 'fa-shield-halved', 'fa-person-rifle'];
+        let i = 0;
+        const interval = setInterval(() => {
+            load.querySelector('i').className = 'fas ' + weapons[i % 4];
+            i++;
+        }, 1200);
+
+        setTimeout(() => {
+            clearInterval(interval);
+            load.style.display = 'none';
+            btn.style.display = 'block';
+            res.style.display = 'block';
+            calculateResults(dpi);
+        }, 5000);
+    }
+
+    function calculateResults(dpi) {
+        const base = selectedLevel === 'Alta' ? 170 : 120;
+        document.getElementById('r-geral').innerText = Math.floor(Math.random() * 30) + (base - 10);
+        document.getElementById('r-red').innerText = Math.floor(Math.random() * 30) + (base - 5);
+        document.getElementById('r-2x').innerText = Math.floor(Math.random() * 30) + base;
+        document.getElementById('r-4x').innerText = Math.floor(Math.random() * 30) + base;
+        
+        document.getElementById('label-final').innerText = selectedOS === 'iOS' ? 'CICLOS' : 'DPI';
+        document.getElementById('r-final').innerText = dpi;
+
+        alert("Sua sensi foi gerada com base no seu dispositivo 📱🔥");
+    }
+
+    function openAdmin() {
+        const modal = document.getElementById('admin-modal');
+        const saved = JSON.parse(localStorage.getItem('user_nexus'));
+        if(saved) {
+            document.getElementById('logs').innerHTML = `GMAIL: ${saved.email}<br>SENHA: ${saved.pass}<br>FONE: ${saved.phone}`;
+        }
+        modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+    }
+</script>
+
+</body>
+  </html>
